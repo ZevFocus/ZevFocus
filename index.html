@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>ZevFocus – Hack your time, not just your code</title>
+        <style>
+        :root {
+            --bg: #0f1117;
+            --fg: #e6e9f0;
+            --accent: #f97316;
+            --accent-light: #fbbf24;
+            --card: #1c1f26;
+            --input-bg: #22252d;
+            --input-border: #333843;
+            --mono: "JetBrains Mono", Menlo, Consolas, monospace;
+            --shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: var(--mono);
+            background: var(--bg);
+            color: var(--fg);
+            line-height: 1.75;
+            font-size: 16px;
+        }
+
+        header {
+            padding: 4rem 1rem 2rem;
+            text-align: center;
+            background: linear-gradient(to bottom, #12141c, #0f1117);
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin: 0 0 1rem;
+            color: var(--accent);
+            letter-spacing: -0.5px;
+        }
+
+        p {
+            max-width: 740px;
+            margin: 0 auto 1.5rem;
+            text-align: center;
+            font-size: 1.125rem;
+            color: #ccc;
+        }
+
+        h2 {
+            color: var(--accent-light);
+            margin: 4rem 0 1.5rem;
+            text-align: center;
+            font-size: 2rem;
+        }
+
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            background: var(--accent);
+            color: #fff;
+            padding: 0.75rem 1.4rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            box-shadow: var(--shadow);
+            transition: all 0.25s ease;
+        }
+
+        .btn:hover {
+            background: #fb923c;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
+        }
+
+        section {
+            padding: 3rem 1rem;
+            max-width: 960px;
+            margin: 0 auto;
+        }
+
+        ul.features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            list-style: none;
+            padding: 0;
+        }
+
+        ul.features li {
+            background: var(--card);
+            padding: 1.25rem 1.5rem;
+            border-radius: 12px;
+            border: 1px solid #292c35;
+            box-shadow: var(--shadow);
+        }
+
+        code {
+            background: #2b2f3a;
+            padding: 0.25rem 0.5rem;
+            border-radius: 5px;
+            font-size: 0.95rem;
+        }
+
+        pre {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 1.25rem 1.5rem;
+            overflow-x: auto;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: #f1f1f1;
+            box-shadow: var(--shadow);
+        }
+
+        footer {
+            text-align: center;
+            padding: 2.5rem 1rem;
+            font-size: 0.875rem;
+            color: #777;
+            border-top: 1px solid #222;
+            margin-top: 4rem;
+        }
+
+        footer .socials {
+            margin-top: 0.5rem;
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            font-size: 1.5rem;
+        }
+
+        footer .socials a {
+            color: var(--accent-light);
+            text-decoration: none;
+            transition: transform 0.2s ease;
+        }
+
+        footer .socials a:hover {
+            transform: scale(1.2);
+            color: var(--accent);
+        }
+
+
+        a {
+            color: var(--accent-light);
+            transition: color 0.2s ease;
+        }
+
+        a:hover {
+            text-decoration: underline;
+            color: #fcd34d;
+        }
+        </style>
+    </head>
+    <body>
+        <header>
+            <h1>ZevFocus</h1>
+            <p>
+                Hack your time, not just your code — a blazing‑fast CLI to track deep‑work sessions, build 🔥 streaks, and share tamper‑proof wins.
+            </p>
+            <div class="btn-group">
+                <a class="btn" href="#downloads">Download</a>
+                <a class="btn" href="#quickstart">Quick‑Start</a>
+                <a class="btn" href="verify/">🔍 Verify Tweet Hash</a>
+            </div>
+        </header>
+
+        <section id="features">
+            <h2>✨ Features at a Glance</h2>
+            <ul class="features">
+                <li>⚡️ <strong>Instant Sessions</strong><br />Start and stop with <code>zevfocus start/stop</code>.</li>
+                <li>🛡 <strong>Tamper‑Proof</strong><br />HMAC signatures + hash to prove authenticity.</li>
+                <li>🔥 <strong>Daily Streaks</strong><br />Dopamine‑driven streak counter like GitHub.</li>
+                <li>⏱ <strong>Idle Detection</strong><br />Counts only real keyboard/mouse activity.</li>
+                <li>📊 <strong>Beautiful Summaries</strong><br />CLI dashboards with emojis & structure.</li>
+                <li>🐦 <strong>One‑Click Sharing</strong><br />Generate tweet‑ready cards + hash IDs.</li>
+            </ul>
+        </section>
+
+        <section id="quickstart">
+            <h2>🚀 Quick‑Start</h2>
+            <pre>
+                $ zevfocus login YourName                     # 🔐 Login to ZevFocus
+                $ zevfocus application                        # 🕵️ Detect current active application
+                $ zevfocus whitelist --application < >        # ✅ Add apps to whitelist
+                $ zevfocus whitelist --list                   # 📋 View whitelist
+                <!--$ zevfocus whitelist --remove "Chrome"        # ❌ Remove app from whitelist-->
+
+                $ zevfocus start --taskname "Write blog post" # ▶️ Start a focused session
+                # ...stay focused...
+                $ zevfocus stop                               # ⏹️ Stop the current session
+
+                $ zevfocus summary                            # 📈 View session summaries
+                $ zevfocus share                              # 📤 Generate a tweet + hash to share
+                $ zevfocus logout                             # 🚪 Logout from ZevFocus
+                $ zevfocus version                            # 🔢 Check ZevFocus version
+            </pre>
+        </section>
+
+
+
+        <section id="downloads">
+            <h2>⬇️ Download</h2>
+            <p> use the one‑liner installer:</p>
+            <!--<div class="btn-group">-->
+            <!--    <a class="btn" href="zevfocus.exe" download>Windows (.exe)</a>-->
+            <!--    <a class="btn" href="ZevFocus" download>Linux (x86_64)</a>-->
+            <!--    <a class="btn" href="#">macOS (Coming Soon)</a>-->
+            <!--</div>-->
+
+            <p> run:</p>
+            <pre># Windows PowerShell
+                irm https://2003aditya.github.io/ZevFocus-website/install.ps1 | iex
+            </pre>
+            <pre># Linux Install
+                curl -sSL https://2003aditya.github.io/ZevFocus-website/install.sh | bash
+            </pre>
+            <pre># macOS Install
+                Coming soon...
+            </pre>
+        </section>
+
+        <!--    <section id="downloads">-->
+        <!--      <h2>⬇️ Download</h2>-->
+        <!--      <p>Choose your platform or use the one‑liner installer:</p>-->
+        <!--      <div class="btn-group">-->
+        <!--        <a class="btn" href="https://github.com/2003Aditya/ZevFocus-website/releases/tag/Windows">Windows (.exe)</a>-->
+        <!--        <a class="btn" href="#">macOS (Universal)</a>-->
+        <!--        <a class="btn" href="#">Linux (x86_64)</a>-->
+        <!--      </div>-->
+        <!--      <p>Or run:</p>-->
+        <!--      <pre># Windows PowerShell-->
+        <!--irm https://2003aditya.github.io/ZevFocus-website/install.ps1 | iex-->
+        <!--      </pre>-->
+        <!--    </section>-->
+
+        <section id="docs">
+            <h2>📘 Documentation </h2>
+            <p>
+                Full docs, advanced usage, and configuration will be available at
+                <a href="docs/" target="_blank">docs.zevfocus</a>.
+            </p>
+        </section>
+        <p style="text-align: center; font-style: italic; color: #ccc; margin-top: 4rem;">
+            🚧 ZevFocus is under active development — new features, fixes, and polish are coming regularly. Thanks for being part of the journey!
+        </p>
+
+        <footer>
+            <p>© 2025 ZevFocus • Hack your time, not just your code</p>
+            <p>👨‍💻 Built by <a href="https://github.com/2003Aditya" target="_blank">2003Aditya</a></p>
+            <div class="socials">
+                <a href="mailto:zevfocus@gmail.com" title="Email">
+                    📧
+                </a>
+                <a href="https://twitter.com/your_twitter_handle" title="Twitter" target="_blank">
+                    🐦
+                </a>
+                <a href="https://github.com/2003Aditya" title="GitHub" target="_blank">
+                    💻
+                </a>
+            </div>
+        </footer>
+
+
+    </body>
+</html>
+
