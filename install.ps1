@@ -1,5 +1,5 @@
 # ZevFocus CLI Installer Script for Windows
-$exeUrl = "https://2003aditya.github.io/ZevFocus-website/zevfocus.exe"
+$exeUrl = "https://zevfocus.github.io/ZevFocus/zevfocus.exe"
 $installDir = "$env:USERPROFILE\.zevfocus"
 $exePath = "$installDir\zevfocus.exe"
 
