@@ -7,7 +7,7 @@ echo "📦 Installing ZevFocus CLI (Linux x86_64)..."
 INSTALL_DIR="/usr/local/bin"
 BINARY_NAME="ZevFocus"
 TARGET_NAME="zevfocus"
-VERSION="1.1.0"
+VERSION="1.1.2"
 OS="linux"
 
 # Ping API (non-blocking)
