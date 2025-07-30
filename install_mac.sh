@@ -7,7 +7,7 @@ echo "📦 Installing ZevFocus CLI (macOS - Zsh)..."
 INSTALL_DIR="/usr/local/bin"
 BINARY_NAME="ZevFocusDarwin"
 TARGET_NAME="zevfocus"
-VERSION="1.2.0"
+VERSION="1.2.2"
 OS="darwin"
 
 # Ping API (non-blocking)
