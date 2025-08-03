@@ -4,277 +4,467 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>ZevFocus – Hack your time, not just your code</title>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js" defer></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js" defer></script>
+        <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.11.1/tsparticles.bundle.min.js" defer></script>
         <style>
         :root {
-            --bg: #0f1117;
-            --fg: #e6e9f0;
-            --accent: #f97316;
-            --accent-light: #fbbf24;
-            --card: #1c1f26;
-            --input-bg: #22252d;
-            --input-border: #333843;
-            --mono: "JetBrains Mono", Menlo, Consolas, monospace;
-            --shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+        --bg: #0f1117;
+        --fg: #e6e9f0;
+        --accent: #f97316;
+        --accent-light: #fbbf24;
+        --card: #1c1f26;
+        --mono: "JetBrains Mono", Menlo, Consolas, monospace;
+        --shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        --transition: all 0.3s ease-in-out;
         }
-
-        * {
-            box-sizing: border-box;
-        }
-
+        * { box-sizing: border-box; margin:0; padding:0; }
         body {
-            margin: 0;
-            font-family: var(--mono);
-            background: var(--bg);
-            color: var(--fg);
-            line-height: 1.75;
-            font-size: 16px;
+        background: var(--bg); color: var(--fg);
+        font-family: 'Inter', var(--mono);
+        line-height:1.75; scroll-behavior:smooth;
         }
-
+        #particles {
+        position: fixed;
+        width: 100%; height: 100%;
+        top: 0; left: 0;
+        z-index: -1;
+        }
         header {
-            padding: 4rem 1rem 2rem;
-            text-align: center;
-            background: linear-gradient(to bottom, #12141c, #0f1117);
+        padding:6rem 1rem 3rem;
+        text-align:center;
         }
-
-        h1 {
-            font-size: 3rem;
-            margin: 0 0 1rem;
-            color: var(--accent);
-            letter-spacing: -0.5px;
-        }
-
-        p {
-            max-width: 740px;
-            margin: 0 auto 1.5rem;
-            text-align: center;
-            font-size: 1.125rem;
-            color: #ccc;
-        }
-
-        h2 {
-            color: var(--accent-light);
-            margin: 4rem 0 1.5rem;
-            text-align: center;
-            font-size: 2rem;
-        }
-
-        .btn-group {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 1rem;
-            margin-top: 2rem;
-        }
-
+        h1 { color: var(--accent); font-size:3.8rem; font-weight:800; }
+        h2 { font-size:2.25rem; color: var(--accent-light); margin-bottom:1rem; text-align: center; }
+        p { max-width:700px; margin:1rem auto; font-size:1.15rem; color:#ccc; text-align: center; }
+        .btn-group { display:flex; justify-content:center; gap:1rem; flex-wrap:wrap; margin-top:2rem; }
         .btn {
-            background: var(--accent);
-            color: #fff;
-            padding: 0.75rem 1.4rem;
-            border: none;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 600;
-            text-decoration: none;
-            box-shadow: var(--shadow);
-            transition: all 0.25s ease;
+        padding:0.75rem 1.5rem; font-size:1rem; font-weight:600;
+        color:#fff; background:linear-gradient(135deg,var(--accent),var(--accent-light));
+        border:none; border-radius:12px; box-shadow:var(--shadow);
+        transition:var(--transition);
+        position: relative; overflow:hidden;
+        text-decoration:none;
         }
-
-        .btn:hover {
-            background: #fb923c;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
+        .btn::after {
+        content:''; position:absolute; top:0; left:-100%; width:100%; height:100%;
+        background:rgba(255,255,255,0.2); transition:0.5s;
         }
-
-        section {
-            padding: 3rem 1rem;
-            max-width: 960px;
-            margin: 0 auto;
-        }
-
+        .btn:hover::after { left:0; }
+        section { padding:4rem 1rem; max-width:960px; margin:0 auto; }
         ul.features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1.5rem;
-            list-style: none;
-            padding: 0;
+        display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+        gap:2rem; list-style:none; margin-top:2rem;
         }
-
         ul.features li {
-            background: var(--card);
-            padding: 1.25rem 1.5rem;
-            border-radius: 12px;
-            border: 1px solid #292c35;
-            box-shadow: var(--shadow);
+        background: var(--card);
+        padding: 2rem;
+        border-radius: 14px;
+        border: 1px solid #292c35;
+        box-shadow: var(--shadow);
+        transform: translateY(20px);
+        opacity: 0;
+        transition: var(--transition);
+        font-size: 1.1rem;
+        line-height: 1.6;
         }
-
-        code {
-            background: #2b2f3a;
-            padding: 0.25rem 0.5rem;
-            border-radius: 5px;
-            font-size: 0.95rem;
+        ul.features li:hover {
+        transform: translateY(-5px) scale(1.02);
+        box-shadow:0 14px 28px rgba(0,0,0,0.35);
         }
-
-        pre {
-            background: var(--card);
-            border-radius: 12px;
-            padding: 1.25rem 1.5rem;
-            overflow-x: auto;
-            font-size: 0.95rem;
-            line-height: 1.5;
-            color: #f1f1f1;
-            box-shadow: var(--shadow);
+        ul.features li .icon {
+        font-size:2rem; display:block; margin-bottom:1rem;
+        transition: transform 0.3s ease, color 0.3s ease;
         }
-
+        ul.features li:hover .icon {
+        transform: scale(1.2);
+        color: var(--accent-light);
+        }
+        .terminal {
+        max-width: 700px;
+        margin: 2rem auto;
+        background: #1c1f26;
+        border-radius: 10px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        font-family: var(--mono);
+        color: #e6e9f0;
+        }
+        .terminal-bar {
+        background: #2b2f3a;
+        padding: 0.5rem 1rem;
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        }
+        .terminal-bar .dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        display: inline-block;
+        }
+        .terminal-bar .red { background: #ff5f56; }
+        .terminal-bar .yellow { background: #ffbd2e; }
+        .terminal-bar .green { background: #27c93f; }
+        .terminal-body {
+        padding: 1rem 1.5rem;
+        font-size: 1.05rem;
+        line-height: 1.6;
+        min-height: 180px;
+        }
+        #terminal-text::after {
+        content: "|";
+        animation: blink 0.8s infinite;
+        }
+        @keyframes blink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0; }
+        }
+        pre.quick {
+        background:var(--card); padding:1.5rem; border-radius:12px;
+        font-family:var(--mono); font-size:1rem; margin:1rem auto;
+        max-width:600px; opacity:0; transform: translateY(20px);
+        transition:var(--transition);
+        }
         footer {
-            text-align: center;
-            padding: 2.5rem 1rem;
-            font-size: 0.875rem;
-            color: #777;
-            border-top: 1px solid #222;
-            margin-top: 4rem;
+        padding:2rem 1rem; text-align:center; font-size:0.9rem;
+        border-top:1px solid #222; color:#888;
+        }
+        .download-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 1.5rem;
+        margin-top: 2rem;
         }
 
-        footer .socials {
-            margin-top: 0.5rem;
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            font-size: 1.5rem;
+        .download-card {
+        background: var(--card);
+        border: 1px solid #292c35;
+        border-radius: 14px;
+        padding: 1.5rem;
+        box-shadow: var(--shadow);
+        transition: var(--transition);
         }
 
-        footer .socials a {
-            color: var(--accent-light);
-            text-decoration: none;
-            transition: transform 0.2s ease;
+        .download-card:hover {
+        transform: translateY(-5px) scale(1.02);
+        box-shadow: 0 14px 28px rgba(0, 0, 0, 0.35);
         }
 
-        footer .socials a:hover {
-            transform: scale(1.2);
-            color: var(--accent);
+        .download-card h3 {
+        margin-bottom: 1rem;
+        font-size: 1.25rem;
+        color: var(--accent);
+        }
+
+        .download-card code {
+        font-family: var(--mono);
+        font-size: 0.95rem;
+        display: block;
+        background: #121418;
+        padding: 1rem;
+        border-radius: 10px;
+        color: #e6e9f0;
+        word-break: break-word;
+        }
+        .social-links {
+        margin-top: 1rem;
+        display: flex;
+        justify-content: center;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+        }
+
+        .social-links a {
+        color: #888;
+        transition: color 0.3s ease;
+        }
+
+        .social-links a:hover {
+        color: var(--accent-light);
+        }
+
+        .social-links svg {
+        vertical-align: middle;
+        transition: transform 0.3s ease;
+        }
+
+        .social-links a:hover svg {
+        transform: scale(1.2);
+        }
+
+        #sharing {
+        padding: 4rem 1rem;
+        text-align: center;
+        }
+
+        #sharing p {
+        max-width: 720px;
+        margin: 1rem auto;
+        font-size: 1.15rem;
+        color: #ccc;
+        }
+
+        .share-card {
+        margin-top: 2rem;
+        }
+
+        .share-card img {
+        width: 100%;
+        max-width: 420px;
+        height: auto;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        border: 1px solid #292c35;
+        background: var(--card);
+        transition: transform 0.3s ease, filter 0.3s ease;
+        filter: brightness(0.95) contrast(1.05);
+        }
+
+        .share-card img:hover {
+        transform: scale(1.02);
+        filter: brightness(1) contrast(1.1);
+        }
+
+        .highlight-section {
+        padding: 4rem 1rem;
+        text-align: center;
+        }
+
+        .highlight-box {
+        background: var(--card);
+        border: 1px solid #292c35;
+        box-shadow: var(--shadow);
+        border-radius: 16px;
+        padding: 2rem;
+        max-width: 800px;
+        margin: 2rem auto 0;
+        transition: var(--transition);
+        }
+
+        .highlight-box:hover {
+        transform: scale(1.01);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .highlight-box p {
+        font-size: 1.15rem;
+        color: #ccc;
+        margin: 1rem 0;
+        line-height: 1.7;
         }
 
 
-        a {
-            color: var(--accent-light);
-            transition: color 0.2s ease;
-        }
-
-        a:hover {
-            text-decoration: underline;
-            color: #fcd34d;
-        }
         </style>
     </head>
     <body>
-        <header>
-            <h1>ZevFocus</h1>
-            <p>
-                Hack your time, not just your code — a blazing‑fast CLI to track deep‑work sessions, build 🔥 streaks, and share tamper‑proof wins.
-            </p>
-            <div class="btn-group">
-                <a class="btn" href="#downloads">Download</a>
-                <a class="btn" href="#quickstart">Quick‑Start</a>
-                <a class="btn" href="verify/">🔍 Verify Tweet Hash</a>
-            </div>
-        </header>
+        <div id="particles"></div>
+        <main>
+            <header>
+                <h1>ZEVFOCUS</h1>
+                <p>ZevFocus is the offline CLI tracker built for deep work — no idle time, no fake logs, just proof of progress.</p>
+                <div class="btn-group">
+                    <a class="btn" href="#downloads">Download</a>
+                    <a class="btn" href="#quickstart">Quick‑Start</a>
+                    <a class="btn" href="verify/">🔍 Verify Tweet Hash</a>
+                    <a class="btn" href="#documentation">📘 Documentation</a>
+                </div>
+            </header>
 
-        <section id="features">
-            <h2>✨ Features at a Glance</h2>
-            <ul class="features">
-                <li>⚡️ <strong>Instant Sessions</strong><br />Start and stop with <code>zevfocus start/stop</code>.</li>
-                <li>🛡 <strong>Tamper‑Proof</strong><br />HMAC signatures + hash to prove authenticity.</li>
-                <li>🔥 <strong>Daily Streaks</strong><br />Dopamine‑driven streak counter like GitHub.</li>
-                <li>⏱ <strong>Idle Detection</strong><br />Counts only real keyboard/mouse activity.</li>
-                <li>📊 <strong>Beautiful Summaries</strong><br />CLI dashboards with emojis & structure.</li>
-                <li>🐦 <strong>One‑Click Sharing</strong><br />Generate tweet‑ready cards + hash IDs.</li>
-            </ul>
-        </section>
-
-        <section id="quickstart">
-            <h2>🚀 Quick‑Start</h2>
-            <pre>
-                $ zevfocus login YourName                     # 🔐 Login to ZevFocus
-                $ zevfocus application                        # 🕵️ Detect current active application
-                $ zevfocus whitelist --application < >        # ✅ Add apps to whitelist
-                $ zevfocus whitelist --list                   # 📋 View whitelist
-                <!--$ zevfocus whitelist --remove "Chrome"        # ❌ Remove app from whitelist-->
-
-                $ zevfocus start --taskname "Write blog post" # ▶️ Start a focused session
-                # ...stay focused...
-                $ zevfocus stop                               # ⏹️ Stop the current session
-
-                $ zevfocus summary                            # 📈 View session summaries
-                $ zevfocus share                              # 📤 Generate a tweet + hash to share
-                $ zevfocus logout                             # 🚪 Logout from ZevFocus
-                $ zevfocus version                            # 🔢 Check ZevFocus version
-            </pre>
-        </section>
+            <section id="why-zevfocus" class="highlight-section">
+                <h2>🛠 Built for Real Output</h2>
+                <div class="highlight-box">
+                    <p>
+                        ZevFocus isn’t here to track your time — it’s here to prove your progress.
+                        It runs offline, skips idle time, and logs your deep work with cryptographic proof.
+                    </p>
+                    <p>
+                        No noise. No distractions. Just focus — captured, signed, and shareable.
+                    </p>
+                    <p>
+                        From solo sprints to public streaks, ZevFocus helps builders build with confidence.
+                    </p>
+                </div>
+            </section>
 
 
 
-        <section id="downloads">
-            <h2>⬇️ Download</h2>
-            <p> use the one‑liner installer:</p>
-            <!--<div class="btn-group">-->
-            <!--    <a class="btn" href="zevfocus.exe" download>Windows (.exe)</a>-->
-            <!--    <a class="btn" href="ZevFocus" download>Linux (x86_64)</a>-->
-            <!--    <a class="btn" href="#">macOS (Coming Soon)</a>-->
-            <!--</div>-->
+            <section id="features">
+                <h2>✨ Features at a Glance</h2>
+                <ul class="features">
+                    <li><span class="icon">⚡️</span><strong>Instant Sessions</strong><br /><code>zevfocus start</code></li>
+                    <li><span class="icon">🛡</span><strong>Tamper‑Proof Logs</strong><br />HMAC‑signed for authenticity</li>
+                    <li><span class="icon">🔥</span><strong>Daily Streaks</strong><br />Build consistency with visible streaks</li>
+                    <li><span class="icon">⏱</span><strong>Idle Detection</strong><br />Only counts active work time</li>
+                    <li><span class="icon">📊</span><strong>Beautiful Summaries</strong><br />CLI dash of your effort</li>
+                    <li><span class="icon">🐦</span><strong>One‑Click Sharing</strong><br />Generate shareable tweet‑cards</li>
+                </ul>
+            </section>
 
-            <p> run:</p>
-            <pre># Windows PowerShell
-                irm https://zevfocus.github.io/ZevFocus/install.ps1 | iex
-            </pre>
-            <pre># Linux Install
-                curl -sSL https://zevfocus.github.io/ZevFocus/install.sh | bash
-            </pre>
-            <pre># macOS Install
-                curl -sSL https://zevfocus.github.io/ZevFocus/install_mac.sh | bash
-            </pre>
-        </section>
+            <section id="quickstart">
+                <h2>🚀 Quick‑Start</h2>
+                <div class="terminal">
+                    <div class="terminal-bar">
+                        <span class="dot red"></span>
+                        <span class="dot yellow"></span>
+                        <span class="dot green"></span>
+                    </div>
+                    <div class="terminal-body">
+                        <pre><code id="terminal-text"></code></pre>
+                    </div>
+                </div>
+            </section>
 
-        <!--    <section id="downloads">-->
-        <!--      <h2>⬇️ Download</h2>-->
-        <!--      <p>Choose your platform or use the one‑liner installer:</p>-->
-        <!--      <div class="btn-group">-->
-        <!--        <a class="btn" href="https://github.com/2003Aditya/ZevFocus-website/releases/tag/Windows">Windows (.exe)</a>-->
-        <!--        <a class="btn" href="#">macOS (Universal)</a>-->
-        <!--        <a class="btn" href="#">Linux (x86_64)</a>-->
-        <!--      </div>-->
-        <!--      <p>Or run:</p>-->
-        <!--      <pre># Windows PowerShell-->
-        <!--irm https://2003aditya.github.io/ZevFocus-website/install.ps1 | iex-->
-        <!--      </pre>-->
-        <!--    </section>-->
+            <section id="sharing">
+                <h2>📤 Share Your Grind</h2>
+                <p>After every session, generate a verified ZevFocus card — perfect for sharing your daily progress on LinkedIn, X, or anywhere else. Show your commitment, build your streak, and inspire others.</p>
 
-        <section id="docs">
-            <h2>📘 Documentation </h2>
-            <p>
-                Full docs, advanced usage, and configuration will be available at
-                <a href="docs/" target="_blank">docs.zevfocus</a>.
-            </p>
-        </section>
-        <p style="text-align: center; font-style: italic; color: #ccc; margin-top: 4rem;">
-            🚧 ZevFocus is under active development — new features, fixes, and polish are coming regularly. Thanks for being part of the journey!
-        </p>
+                <div class="share-card">
+                    <img src="zevfocus-share.png" alt="ZevFocus Share Card" />
+                </div>
+
+                <p style="text-align: center; margin-top: 1rem;">
+                    Run <code>zevfocus share</code> in your terminal — and get a downloadable, verifiable image.
+                </p>
+            </section>
+
+
+            <section id="downloads">
+                <h2>⬇️ Download ZevFocus</h2>
+                <p>Get started with a single command on your platform:</p>
+
+                <div class="download-grid">
+                    <div class="download-card">
+                        <h3>🪟 Windows</h3>
+                        <code>irm https://zevfocus.github.io/ZevFocus/install.ps1 | iex</code>
+                    </div>
+                    <div class="download-card">
+                        <h3>🐧 Linux</h3>
+                        <code>curl -sSL https://zevfocus.github.io/ZevFocus/install.sh | bash</code>
+                    </div>
+                    <div class="download-card">
+                        <h3>🍎 macOS</h3>
+                        <code>curl -sSL https://zevfocus.github.io/ZevFocus/install_mac.sh | bash</code>
+                    </div>
+                </div>
+            </section>
+
+            <section id="documentation">
+                <h2>📘 Documentation</h2>
+                <p>ZevFocus is a powerful CLI built for simplicity and productivity. </p>
+
+
+                <p style="margin-top: 2rem; text-align: center;">
+                    View the full <a href="docs/" target="_blank">📚 doc.ZevFocus</a> for all commands, configuration options, and API support.
+                </p>
+            </section>
+
+
+        </main>
 
         <footer>
             <p>© 2025 ZevFocus • Hack your time, not just your code</p>
             <p>👨‍💻 Built by <a href="https://github.com/2003Aditya" target="_blank">2003Aditya</a></p>
-            <div class="socials">
-                <a href="mailto:zevfocus@gmail.com" title="Email">
-                    📧
+
+            <div class="social-links">
+                <a href="https://www.instagram.com/zevfocus/" target="_blank" aria-label="Instagram">
+                    <svg width="22" height="22" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M7.75 2h8.5A5.75 5.75 0 0 1 22 7.75v8.5A5.75 5.75 0 0 1 16.25 22h-8.5A5.75 5.75 0 0 1 2 16.25v-8.5A5.75 5.75 0 0 1 7.75 2zm0 1.5A4.25 4.25 0 0 0 3.5 7.75v8.5A4.25 4.25 0 0 0 7.75 20.5h8.5a4.25 4.25 0 0 0 4.25-4.25v-8.5A4.25 4.25 0 0 0 16.25 3.5h-8.5zM12 7a5 5 0 1 1 0 10a5 5 0 0 1 0-10zm0 1.5a3.5 3.5 0 1 0 0 7a3.5 3.5 0 0 0 0-7zm4.75-.88a.88.88 0 1 1 0 1.76a.88.88 0 0 1 0-1.76z"/>
+                    </svg>
                 </a>
-                <a href="https://twitter.com/your_twitter_handle" title="Twitter" target="_blank">
-                    🐦
+
+                <a href="https://x.com/ZevFocus" target="_blank" aria-label="X">
+                    <svg width="22" height="22" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M14.84 10.47L21.4 3h-1.66l-5.57 6.17L9.2 3H3.1l6.94 10.06L3 21h1.66l6.03-6.67L14.8 21h6.1M5.23 4.14h3.03l10.5 15.72h-3.04"/>
+                    </svg>
                 </a>
-                <a href="https://github.com/2003Aditya" title="GitHub" target="_blank">
-                    💻
+
+                <a href="https://www.linkedin.com/company/zevfocus" target="_blank" aria-label="LinkedIn">
+                    <svg width="22" height="22" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M6.94 6.5c0 .87-.69 1.57-1.56 1.57S3.82 7.37 3.82 6.5s.69-1.56 1.56-1.56 1.56.69 1.56 1.56zM4 8.75h3.88V20H4V8.75zm5.88 0H14v1.5h.07c.56-1 1.9-2.06 3.93-2.06 4.2 0 4.97 2.75 4.97 6.3V20h-3.88v-5.05c0-1.2-.03-2.75-1.69-2.75-1.7 0-1.96 1.33-1.96 2.67V20H9.88V8.75z"/>
+                    </svg>
+                </a>
+
+                <a href="mailto:zevfocus@gmail.com" aria-label="Email">
+                    <svg width="22" height="22" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Zm0 2v.01L12 13 4 6.01V6h16ZM4 18v-9.2l7.4 6.18a1 1 0 0 0 1.2 0L20 8.8V18H4Z"/>
+                    </svg>
                 </a>
             </div>
         </footer>
 
 
+        <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            gsap.registerPlugin(ScrollTrigger);
+
+            gsap.utils.toArray("ul.features li").forEach((el, i) => {
+                gsap.to(el, {
+                    scrollTrigger: { trigger: el, start: "top 90%" },
+                    opacity:1, y:0, delay: i * 0.1 + 0.2, duration:0.8, ease:"power4.out"
+                });
+            });
+
+            gsap.to(".quick", {
+                scrollTrigger: { trigger: "#downloads", start: "top 80%" },
+                opacity:1, y:0, delay: 0.3, duration:0.8, ease:"power3.out"
+            });
+
+            tsParticles.load("particles", {
+                fullScreen: { enable: false },
+                particles: {
+                    number: { value: 30 },
+                    color: { value: ["#f97316", "#fbbf24"] },
+                    shape: { type: "circle" },
+                    opacity: { value: 0.3 },
+                    size: { value: { min: 1, max: 4 } },
+                    move: { enable: true, speed: 0.6 },
+                    links: { enable: true, color: "#f97316", distance: 150 }
+                },
+                background: { color: "#0f1117" }
+            });
+
+            // Terminal Typing Animation
+            const terminal = document.getElementById("terminal-text");
+            const lines = [
+                "$ zevfocus login YourName",
+                "$ zevfocus start --taskname \"Write blog post\"",
+                "... working ...",
+                "$ zevfocus stop",
+                "$ zevfocus summary",
+                "$ zevfocus share"
+            ];
+
+            let lineIndex = 0;
+            let charIndex = 0;
+
+            function typeLine() {
+                if (lineIndex < lines.length) {
+                    if (charIndex < lines[lineIndex].length) {
+                        terminal.textContent += lines[lineIndex].charAt(charIndex);
+                        charIndex++;
+                        setTimeout(typeLine, 35);
+                    } else {
+                        terminal.textContent += "\n";
+                        lineIndex++;
+                        charIndex = 0;
+                        setTimeout(typeLine, 500);
+                    }
+                }
+            }
+
+            let triggered = false;
+            const observer = new IntersectionObserver((entries) => {
+                if (entries[0].isIntersecting && !triggered) {
+                    triggered = true;
+                    typeLine();
+                }
+            }, { threshold: 0.5 });
+
+            observer.observe(document.querySelector("#quickstart"));
+        });
+        </script>
     </body>
 </html>
 

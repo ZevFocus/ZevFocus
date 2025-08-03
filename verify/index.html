@@ -1,39 +1,22 @@
-<!-- verify/index.html -->
-<!--<!DOCTYPE html>-->
-<!--<html>-->
-<!--<head>-->
-<!--  <meta charset="UTF-8">-->
-<!--  <title>Tweet Verifier - ZevFocus</title>-->
-<!--  <link rel="stylesheet" href="style.css">-->
-<!--</head>-->
-<!--<body>-->
-<!--  <h1>🔍 Verify Your Tweet Hash</h1>-->
-<!---->
-<!--  <input type="text" id="hashInput" placeholder="Paste tweet hash (e.g. 9f1c2b8e)" />-->
-<!--  <button onclick="verifyHash()">Verify</button>-->
-<!---->
-<!--  <div id="result"></div>-->
-<!---->
-  <!--<a href="./verify/">🔍 Verify Tweet Hash</a>-->
-<!---->
-<!--  <h2>⬇️ Download CLI Tool</h2>-->
-<!--  <a href="https://github.com/2003Aditya/ZevFocus/releases" target="_blank">Download ZevFocus CLI</a>-->
-<!---->
-<!--  <script src="script.js"></script>-->
-<!--</body>-->
-<!--</html>-->
-<!---->
-
-
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <title>🔍 Verify Tweet Hash – ZevFocus</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Fonts & Styles -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="style.css" />
+
+    <!-- GSAP & Particles -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.11.1/tsparticles.bundle.min.js" defer></script>
   </head>
   <body>
+    <div id="particles"></div>
+
     <header>
       <h1>ZevFocus</h1>
       <p>🔍 Verify the authenticity of your tweet hash and track your deep-work sessions with confidence.</p>
@@ -62,6 +45,41 @@
     </footer>
 
     <script src="script.js"></script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Animate sections
+        gsap.utils.toArray("section").forEach((section) => {
+          gsap.to(section, {
+            scrollTrigger: {
+              trigger: section,
+              start: "top 90%",
+            },
+            opacity: 1,
+            y: 0,
+            duration: 0.8,
+            ease: "power4.out",
+          });
+        });
+
+        // Particle background
+        tsParticles.load("particles", {
+          fullScreen: { enable: false },
+          particles: {
+            number: { value: 30 },
+            color: { value: ["#f97316", "#fbbf24"] },
+            shape: { type: "circle" },
+            opacity: { value: 0.3 },
+            size: { value: { min: 1, max: 4 } },
+            move: { enable: true, speed: 0.6 },
+            links: { enable: true, color: "#f97316", distance: 150 },
+          },
+          background: { color: "#0f1117" },
+        });
+      });
+    </script>
   </body>
 </html>
 
