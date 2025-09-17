@@ -4,7 +4,7 @@
 $exeUrl = "https://zevfocus.github.io/ZevFocus/zevfocus.exe"
 $installDir = "$env:USERPROFILE\.zevfocus"
 $exePath = "$installDir\zevfocus.exe"
-$version = "1.2.4"
+$version = "1.2.5"
 $os = "windows"
 
 Write-Host "`n📦 Installing ZevFocus CLI..."
