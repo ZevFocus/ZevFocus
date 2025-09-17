@@ -1,260 +1,544 @@
 
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>ZevFocus | Dashboard</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-<body class="bg-gray-50 text-gray-800 antialiased">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <title>ZevFocus | Dashboard</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    </head>
+    <body class="bg-gray-50 text-gray-800 antialiased">
 
-  <!-- Header -->
-  <header class="bg-white shadow-sm border-b border-gray-200">
-    <div class="max-w-6xl mx-auto flex justify-between items-center py-4 px-4">
-      <h1 class="text-2xl font-bold text-blue-600 tracking-tight">ZevFocus</h1>
-      <span class="text-sm text-gray-500">Productivity Tracking Dashboard</span>
-    </div>
-  </header>
+        <!-- Header -->
+        <header class="bg-white shadow-sm border-b border-gray-200">
+            <div class="max-w-6xl mx-auto flex justify-between items-center py-4 px-4">
+                <h1 class="text-2xl font-bold text-blue-600 tracking-tight">ZevFocus</h1>
+                <span class="text-sm text-gray-500">Productivity Tracking Dashboard</span>
+            </div>
+        </header>
 
-  <main class="max-w-6xl mx-auto p-6 space-y-8">
-    <!-- Controls -->
-    <div class="flex gap-3">
-      <input id="codeInput" type="text" placeholder="Enter teacher code..."
-        class="px-4 py-2 border rounded-lg border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 flex-1"/>
-      <button id="fetchBtn"
-        class="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg shadow hover:bg-blue-700 transition">
-        Fetch Sessions
-      </button>
-    </div>
+        <main class="max-w-6xl mx-auto p-6 space-y-8">
+            <!-- Controls -->
+            <div class="flex gap-3">
+                <input id="codeInput" type="text" placeholder="Enter teacher code..."
+                    class="px-4 py-2 border rounded-lg border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 flex-1"/>
+                <button id="fetchBtn"
+                    class="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg shadow hover:bg-blue-700 transition">
+                    Fetch Sessions
+                </button>
+            </div>
 
-    <!-- Class Summary -->
-    <div id="summary" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"></div>
+            <!-- Class Summary -->
+            <div id="summary" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"></div>
 
-    <!-- All Students Table -->
-    <div class="bg-white p-6 rounded-xl shadow">
-      <h3 class="font-semibold mb-4">All Students Sessions</h3>
-      <!-- ✅ scroll wrapper -->
-      <div id="sessionTableWrapper" class="overflow-y-auto max-h-64">
-        <div id="sessionTable" class="overflow-x-auto"></div>
-      </div>
-    </div>
+            <!-- All Students Table -->
+            <div class="bg-white p-6 rounded-xl shadow">
+                <h3 class="font-semibold mb-4">All Students Sessions</h3>
+                <div id="sessionTableWrapper" class="overflow-y-auto max-h-64">
+                    <div id="sessionTable" class="overflow-x-auto"></div>
+                </div>
+            </div>
 
-    <!-- Selected Student Details -->
-    <div id="studentDetails" class="hidden space-y-6">
-      <h3 class="text-xl font-bold">Student Details</h3>
-      <div id="studentSummary" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"></div>
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div class="bg-white p-6 rounded-xl shadow">
-          <h3 class="font-semibold mb-2">App Usage</h3>
-          <canvas id="studentAppChart"></canvas>
-        </div>
-        <div class="bg-white p-6 rounded-xl shadow">
-          <h3 class="font-semibold mb-2">Active vs Idle</h3>
-          <canvas id="studentActiveIdleChart"></canvas>
-        </div>
-        <div class="bg-white p-6 rounded-xl shadow">
-          <h3 class="font-semibold mb-2">Focus Trend</h3>
-          <canvas id="studentFocusTrendChart"></canvas>
-        </div>
-      </div>
-      <div class="bg-white p-6 rounded-xl shadow">
-        <h3 class="font-semibold mb-4">Raw Logs</h3>
-        <div id="studentLogs" class="overflow-x-auto"></div>
-      </div>
-    </div>
-  </main>
+            <!-- Selected Student Details -->
+            <div id="studentDetails" class="hidden space-y-6">
+                <h3 class="text-xl font-bold">Student Details</h3>
+                <div id="studentSummary" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"></div>
 
-  <script>
-    const fetchBtn = document.getElementById("fetchBtn");
-    const codeInput = document.getElementById("codeInput");
-    const summary = document.getElementById("summary");
-    const sessionTable = document.getElementById("sessionTable");
-    const sessionTableWrapper = document.getElementById("sessionTableWrapper");
-    const studentDetails = document.getElementById("studentDetails");
-    const studentSummary = document.getElementById("studentSummary");
-    const studentLogs = document.getElementById("studentLogs");
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="bg-white p-6 rounded-xl shadow">
+                        <h3 class="font-semibold mb-2">App Usage</h3>
+                        <canvas id="studentAppChart"></canvas>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow">
+                        <h3 class="font-semibold mb-2">Active vs Idle (per app)</h3>
+                        <canvas id="studentActiveIdleChart"></canvas>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow">
+                        <h3 class="font-semibold mb-2">Focus Trend</h3>
+                        <canvas id="studentFocusTrendChart"></canvas>
+                    </div>
+                </div>
 
-    let allSessions = [];
-    let studentAppChart, studentActiveIdleChart, studentFocusTrendChart;
+                <!-- Application Usage Summary (table) -->
+                <div id="studentAppSummary"></div>
 
-    function computeMetrics(sessions) {
-      return sessions.map(s => {
-        const totalTime = s.active_sec + s.idle_sec;
-        const idlePercent = totalTime > 0 ? (s.idle_sec / totalTime) * 100 : 0;
-        const focusScore = Math.max(0, 100 - idlePercent - (s.tampered ? 20 : 0));
-        return { ...s, totalTime, idlePercent, focusScore };
-      });
-    }
+                <!-- Raw Logs -->
+                <div class="bg-white p-6 rounded-xl shadow">
+                    <h3 class="font-semibold mb-4">Raw Logs</h3>
+                    <div id="studentLogs" class="overflow-x-auto"></div>
+                </div>
+            </div>
+        </main>
 
-    function renderClassSummary(sessions) {
-      if (!sessions.length) {
-        summary.innerHTML = "<p class='text-gray-500'>No data</p>";
-        return;
-      }
-      const avgFocus = (sessions.reduce((a, b) => a + b.focusScore, 0) / sessions.length).toFixed(1);
-      const totalStudy = (sessions.reduce((a, b) => a + b.totalTime, 0) / 60).toFixed(1);
-      const avgIdle = (sessions.reduce((a, b) => a + b.idlePercent, 0) / sessions.length).toFixed(1);
-      const topPerformer = sessions.sort((a, b) => b.focusScore - a.focusScore)[0].username;
+        <script>
+        // DOM references
+        const fetchBtn = document.getElementById("fetchBtn");
+        const codeInput = document.getElementById("codeInput");
+        const summary = document.getElementById("summary");
+        const sessionTable = document.getElementById("sessionTable");
+        const sessionTableWrapper = document.getElementById("sessionTableWrapper");
+        const studentDetails = document.getElementById("studentDetails");
+        const studentSummary = document.getElementById("studentSummary");
+        const studentLogs = document.getElementById("studentLogs");
+        const studentAppSummary = document.getElementById("studentAppSummary");
 
-      const cards = [
-        { label: "Avg Focus Score", value: avgFocus },
-        { label: "Total Study Time (min)", value: totalStudy },
-        { label: "Avg Idle %", value: avgIdle + "%" },
-        { label: "Top Performer", value: topPerformer }
-      ];
+        // Chart instances (so we can destroy when re-rendering)
+        let studentAppChart = null;
+        let studentActiveIdleChart = null;
+        let studentFocusTrendChart = null;
 
-      summary.innerHTML = cards.map(c => `
-        <div class="bg-white p-6 rounded-xl shadow flex flex-col items-center">
-          <div class="text-2xl font-bold text-blue-600">${c.value}</div>
-          <div class="text-gray-600">${c.label}</div>
-        </div>
-      `).join("");
-    }
+        // All sessions loaded from API
+        let allSessions = [];
 
-    function renderTable(sessions) {
-      if (!sessions.length) {
-        sessionTable.innerHTML = "<p class='text-gray-500'>No data</p>";
-        return;
-      }
-      const table = `
+        // Helper: robustly parse timestamps from various key names
+        function parseTimestamp(entry) {
+            return entry.timestamp ?? entry.Timestamp ?? entry.time ?? entry.Time ?? entry.ts ?? null;
+        }
+
+        // Helper: robustly get idleTime numeric
+        function parseIdle(entry) {
+            const raw = entry.idleTime ?? entry.IdleTime ?? entry["Idle Time"] ?? entry.idle ?? entry.Idle ?? 0;
+            const n = Number(raw);
+            return Number.isFinite(n) ? n : 0;
+        }
+
+        // Helper: robustly get application name
+        function parseApp(entry) {
+            return entry.Application ?? entry.application ?? entry.App ?? entry.app ?? "Unknown";
+        }
+
+        // Helper: robustly get title
+        function parseTitle(entry) {
+            return entry.titleRaw ?? entry.Title ?? entry.title ?? entry.WindowTitle ?? "";
+        }
+
+        // compute derived metrics for class summary (unchanged logic)
+        function computeMetrics(sessions) {
+            return sessions.map(s => {
+                const activeSec = Number(s.active_sec ?? s.activeSeconds ?? s.active ?? 0);
+                const idleSec = Number(s.idle_sec ?? s.idleSeconds ?? s.idle ?? 0);
+                const totalTime = (isFinite(activeSec) ? activeSec : 0) + (isFinite(idleSec) ? idleSec : 0);
+                const idlePercent = totalTime > 0 ? (idleSec / totalTime) * 100 : 0;
+                const tampered = !!s.tampered;
+                const focusScore = Math.max(0, 100 - idlePercent - (tampered ? 20 : 0));
+                return { ...s, active_sec: activeSec, idle_sec: idleSec, totalTime, idlePercent, focusScore };
+            });
+        }
+
+        function renderClassSummary(sessions) {
+            if (!sessions.length) {
+                summary.innerHTML = "<p class='text-gray-500'>No data</p>";
+                return;
+            }
+            const avgFocus = (sessions.reduce((a, b) => a + b.focusScore, 0) / sessions.length).toFixed(1);
+            const totalStudy = (sessions.reduce((a, b) => a + b.totalTime, 0) / 60).toFixed(1);
+            const avgIdle = (sessions.reduce((a, b) => a + b.idlePercent, 0) / sessions.length).toFixed(1);
+            // top performer by focusScore
+            const topPerformer = [...sessions].sort((a, b) => b.focusScore - a.focusScore)[0]?.username ?? "—";
+
+            const cards = [
+                { label: "Avg Focus Score", value: avgFocus },
+                { label: "Total Study Time (min)", value: totalStudy },
+                { label: "Avg Idle %", value: avgIdle + "%" },
+                { label: "Top Performer", value: topPerformer }
+            ];
+
+            summary.innerHTML = cards.map(c => `
+<div class="bg-white p-6 rounded-xl shadow flex flex-col items-center">
+<div class="text-2xl font-bold text-blue-600">${c.value}</div>
+<div class="text-gray-600">${c.label}</div>
+</div>
+`).join("");
+        }
+
+        function renderTable(sessions) {
+            if (!sessions.length) {
+                sessionTable.innerHTML = "<p class='text-gray-500'>No data</p>";
+                return;
+            }
+            const table = `
+<table class="min-w-full border-collapse">
+<thead class="bg-gray-100">
+<tr>
+${["Username","Task","Date","Study Time (min)","Idle %","Focus Score","Valid"].map(h =>
+`<th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">${h}</th>`
+).join("")}
+</tr>
+</thead>
+<tbody class="divide-y divide-gray-200">
+${sessions.map((s, i) => `
+<tr class="cursor-pointer hover:bg-gray-50" onclick="showStudentDetails('${(s.username||"").replace(/'/g,"\\'")}')">
+<td class="px-4 py-2 text-sm">${s.username}</td>
+<td class="px-4 py-2 text-sm">${s.task ?? s.taskname ?? ""}</td>
+<td class="px-4 py-2 text-sm">${s.date ?? s.started_at ?? ""}</td>
+<td class="px-4 py-2 text-sm">${(s.totalTime/60).toFixed(1)}</td>
+<td class="px-4 py-2 text-sm">${s.idlePercent.toFixed(1)}%</td>
+<td class="px-4 py-2 text-sm">${s.focusScore.toFixed(1)}</td>
+<td class="px-4 py-2 text-sm">${s.valid ? "✅" : "❌"}</td>
+</tr>
+`).join("")}
+</tbody>
+</table>
+`;
+            sessionTable.innerHTML = table;
+            sessionTableWrapper.scrollTop = 0;
+        }
+
+        // Normalize a single raw log entry into consistent fields
+        function normalizeLog(entry) {
+            const tsRaw = parseTimestamp(entry);
+            const timestamp = tsRaw ? new Date(tsRaw) : null;
+            const idle = parseIdle(entry);
+            const app = parseApp(entry);
+            const title = parseTitle(entry);
+            const status = (entry.status ?? entry.Status ?? "").toString().toLowerCase();
+
+            return {
+                timestamp,     // Date object or null
+                timestampRaw: tsRaw,
+                idle,          // numeric idle counter (as present in logs)
+                app,
+                title,
+                status,
+                raw: entry
+            };
+        }
+
+        // Build app usage summary from normalized logs
+        function computeAppUsageFromLogs(normalizedLogs) {
+            const appUsage = {}; // { appName: { active: seconds, idle: seconds } }
+
+            // filter out logs with no valid timestamp
+            const logs = normalizedLogs.filter(l => l.timestamp).sort((a, b) => a.timestamp - b.timestamp);
+
+            if (logs.length < 2) return appUsage;
+
+            for (let i = 0; i < logs.length - 1; i++) {
+                const cur = logs[i];
+                const next = logs[i + 1];
+                const gap = (next.timestamp - cur.timestamp) / 1000; // in seconds
+                if (gap <= 0) continue;
+
+                const deltaIdle = Math.max(0, (next.idle || 0) - (cur.idle || 0)); // how much idle counter increased
+                let idleAssigned = 0;
+
+                // Prefer using idle counter differences (safe)
+                if (deltaIdle > 0) {
+                    // idle can't exceed gap
+                    idleAssigned = Math.min(deltaIdle, gap);
+                } else {
+                    // fallback: if status explicitly includes 'idle', mark whole gap as idle
+                    if (cur.status && cur.status.includes("idle")) {
+                        idleAssigned = gap;
+                    } else {
+                        // assume active (no idle delta and not marked idle)
+                        idleAssigned = 0;
+                    }
+                }
+
+                const activeAssigned = Math.max(0, gap - idleAssigned);
+
+                const appName = cur.app || "Unknown";
+                if (!appUsage[appName]) appUsage[appName] = { active: 0, idle: 0 };
+
+                appUsage[appName].active += activeAssigned;
+                appUsage[appName].idle += idleAssigned;
+            }
+
+            return appUsage;
+        }
+
+        // Utility: format seconds to "x.x min"
+        function secondsToMinutesLabel(sec) {
+            return (sec / 60).toFixed(1) + " min";
+        }
+
+        // Render application usage table and charts
+        function renderAppUsage(appUsage) {
+            // clear previous charts if any
+            if (studentAppChart) { studentAppChart.destroy(); studentAppChart = null; }
+            if (studentActiveIdleChart) { studentActiveIdleChart.destroy(); studentActiveIdleChart = null; }
+
+            const entries = Object.entries(appUsage);
+            if (entries.length === 0) {
+                studentAppSummary.innerHTML = "<p class='text-gray-500'>No application usage data</p>";
+                // clear canvases
+                const appCtx = document.getElementById("studentAppChart").getContext("2d");
+                appCtx.clearRect(0, 0, appCtx.canvas.width, appCtx.canvas.height);
+                const aiCtx = document.getElementById("studentActiveIdleChart").getContext("2d");
+                aiCtx.clearRect(0, 0, aiCtx.canvas.width, aiCtx.canvas.height);
+                return;
+            }
+
+            // sort by total usage (active + idle) descending
+            entries.sort((a, b) => (b[1].active + b[1].idle) - (a[1].active + a[1].idle));
+
+            // build table rows
+            const appRows = entries.map(([app, data]) => `
+<tr>
+<td class="px-4 py-2 text-sm">${app}</td>
+<td class="px-4 py-2 text-sm">${secondsToMinutesLabel(data.active)}</td>
+<td class="px-4 py-2 text-sm">${secondsToMinutesLabel(data.idle)}</td>
+</tr>
+`).join("");
+
+            studentAppSummary.innerHTML = `
+<div class="bg-white p-6 rounded-xl shadow">
+    <h3 class="font-semibold mb-4">Application Usage Summary</h3>
+    <div class="overflow-x-auto">
         <table class="min-w-full border-collapse">
-          <thead class="bg-gray-100">
-            <tr>
-              ${["Username","Task","Date","Study Time (min)","Idle %","Focus Score","Valid"].map(h =>
-                `<th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">${h}</th>`
-              ).join("")}
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-200">
-            ${sessions.map((s, i) => `
-              <tr class="cursor-pointer hover:bg-gray-50" onclick="showStudentDetails('${s.username}')">
-                <td class="px-4 py-2 text-sm">${s.username}</td>
-                <td class="px-4 py-2 text-sm">${s.task}</td>
-                <td class="px-4 py-2 text-sm">${s.date}</td>
-                <td class="px-4 py-2 text-sm">${(s.totalTime/60).toFixed(1)}</td>
-                <td class="px-4 py-2 text-sm">${s.idlePercent.toFixed(1)}%</td>
-                <td class="px-4 py-2 text-sm">${s.focusScore.toFixed(1)}</td>
-                <td class="px-4 py-2 text-sm">${s.valid ? "✅" : "❌"}</td>
-              </tr>
-            `).join("")}
-          </tbody>
-        </table>
-      `;
-      sessionTable.innerHTML = table;
-      sessionTableWrapper.scrollTop = 0; // reset scroll on reload
-    }
-
-    function showStudentDetails(username) {
-      const studentSessions = allSessions.filter(s => s.username === username);
-      if (!studentSessions.length) return;
-      studentDetails.classList.remove("hidden");
-
-      const avgFocus = (studentSessions.reduce((a, b) => a + b.focusScore, 0) / studentSessions.length).toFixed(1);
-      const totalStudy = (studentSessions.reduce((a, b) => a + b.totalTime, 0) / 60).toFixed(1);
-      const avgIdle = (studentSessions.reduce((a, b) => a + b.idlePercent, 0) / studentSessions.length).toFixed(1);
-
-      studentSummary.innerHTML = `
-        <div class="bg-white p-6 rounded-xl shadow flex flex-col items-center">
-          <div class="text-2xl font-bold text-blue-600">${avgFocus}</div>
-          <div class="text-gray-600">Avg Focus Score</div>
-        </div>
-        <div class="bg-white p-6 rounded-xl shadow flex flex-col items-center">
-          <div class="text-2xl font-bold text-blue-600">${totalStudy}</div>
-          <div class="text-gray-600">Total Study Time (min)</div>
-        </div>
-        <div class="bg-white p-6 rounded-xl shadow flex flex-col items-center">
-          <div class="text-2xl font-bold text-blue-600">${avgIdle}%</div>
-          <div class="text-gray-600">Avg Idle %</div>
-        </div>
-      `;
-
-      // Charts
-      const appCounts = {};
-      studentSessions.forEach(s => (s.log_json || []).forEach(l => {
-        appCounts[l.Application] = (appCounts[l.Application] || 0) + 1;
-      }));
-
-      const labels = studentSessions.map(s => s.date);
-      const active = studentSessions.map(s => s.active_sec / 60);
-      const idle = studentSessions.map(s => s.idle_sec / 60);
-      const focusTrend = studentSessions.map(s => s.focusScore);
-
-      if (studentAppChart) studentAppChart.destroy();
-      if (studentActiveIdleChart) studentActiveIdleChart.destroy();
-      if (studentFocusTrendChart) studentFocusTrendChart.destroy();
-
-      studentAppChart = new Chart(document.getElementById("studentAppChart"), {
-        type: "pie",
-        data: { labels: Object.keys(appCounts), datasets: [{ data: Object.values(appCounts) }] }
-      });
-
-      studentActiveIdleChart = new Chart(document.getElementById("studentActiveIdleChart"), {
-        type: "bar",
-        data: { labels, datasets: [
-          { label: "Active (min)", data: active, backgroundColor: "rgba(37,99,235,0.7)" },
-          { label: "Idle (min)", data: idle, backgroundColor: "rgba(156,163,175,0.7)" }
-        ]}
-      });
-
-      studentFocusTrendChart = new Chart(document.getElementById("studentFocusTrendChart"), {
-        type: "line",
-        data: { labels, datasets: [{ label: "Focus Score", data: focusTrend, borderColor: "rgba(16,185,129,1)" }] }
-      });
-
-      // Logs
-      const logs = studentSessions.flatMap(s => s.log_json || []);
-      if (!logs.length) {
-        studentLogs.innerHTML = "<p class='text-gray-500'>No logs available</p>";
-      } else {
-        studentLogs.innerHTML = `
-          <table class="min-w-full border-collapse">
             <thead class="bg-gray-100">
-              <tr>
-                ${["Timestamp","Title","Idle Time","Status","Application"].map(h =>
-                  `<th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">${h}</th>`
-                ).join("")}
-              </tr>
+                <tr>
+                    <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Application</th>
+                    <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Active Time</th>
+                    <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Idle Time</th>
+                </tr>
             </thead>
             <tbody class="divide-y divide-gray-200">
-              ${logs.map(l => `
-                <tr>
-                  <td class="px-4 py-2 text-sm">${l.timestamp}</td>
-                  <td class="px-4 py-2 text-sm">${l.titleRaw}</td>
-                  <td class="px-4 py-2 text-sm">${l.idleTime}</td>
-                  <td class="px-4 py-2 text-sm">${l.status}</td>
-                  <td class="px-4 py-2 text-sm">${l.Application}</td>
-                </tr>
-              `).join("")}
+                ${appRows}
             </tbody>
-          </table>
-        `;
-      }
-    }
+        </table>
+    </div>
+</div>
+`;
 
-    window.showStudentDetails = showStudentDetails;
+            // Charts data
+            const labels = entries.map(e => e[0]);
+            const activeData = entries.map(e => Number((e[1].active || 0).toFixed(1)));
+            const idleData = entries.map(e => Number((e[1].idle || 0).toFixed(1)));
+            const totalData = labels.map((_, i) => activeData[i] + idleData[i]);
 
-    fetchBtn.addEventListener("click", async () => {
-      const code = codeInput.value.trim();
-      if (!code) { alert("Please enter a code!"); return; }
-      sessionTable.innerHTML = "<p class='text-gray-500'>Loading...</p>";
-      summary.innerHTML = "";
-      studentDetails.classList.add("hidden");
+            // Pie chart: total usage per app (seconds -> minutes shown in tooltip)
+            // Pie chart: total usage per app (seconds -> minutes shown in tooltip)
+            const pieCtx = document.getElementById("studentAppChart").getContext("2d");
 
-      try {
-        const res = await fetch(`https://zev-focus-api.vercel.app/api/session?code=${encodeURIComponent(code)}`);
-        if (!res.ok) throw new Error("API error: " + res.status);
-        const raw = await res.json();
-        allSessions = computeMetrics(raw);
+            // ✅ Generate distinct colors (HSL rainbow)
+            const colors = labels.map((_, i) => `hsl(${(i * 360 / labels.length)}, 70%, 50%)`);
 
-        renderClassSummary(allSessions);
-        renderTable(allSessions);
-      } catch (err) {
-        sessionTable.innerHTML = `<p class="text-red-500">Error: ${err.message}</p>`;
-      }
-    });
-  </script>
-</body>
+            studentAppChart = new Chart(pieCtx, {
+                type: "pie",
+                data: {
+                    labels,
+                    datasets: [{
+                        data: totalData,
+                        backgroundColor: colors
+                    }]
+                },
+                options: {
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => {
+                                    const sec = ctx.raw;
+                                    return `${ctx.label}: ${(sec/60).toFixed(1)} min`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            <!--const pieCtx = document.getElementById("studentAppChart").getContext("2d");-->
+            <!--studentAppChart = new Chart(pieCtx, {-->
+            <!--  type: "pie",-->
+            <!--  data: {-->
+            <!--    labels,-->
+            <!--    datasets: [{-->
+            <!--      data: totalData,-->
+            <!--      // Chart.js will pick colors automatically; small palette hints used-->
+            <!--      backgroundColor: labels.map((_, i) => undefined)-->
+            <!--    }]-->
+            <!--  },-->
+            <!--  options: {-->
+            <!--    plugins: {-->
+            <!--      tooltip: {-->
+            <!--        callbacks: {-->
+            <!--          label: (ctx) => {-->
+            <!--            const sec = ctx.raw;-->
+            <!--            return `${ctx.label}: ${(sec/60).toFixed(1)} min`;-->
+            <!--          }-->
+            <!--        }-->
+            <!--      }-->
+            <!--    }-->
+            <!--  }-->
+            <!--});-->
+
+            // Stacked bar: active vs idle (per app)
+            const barCtx = document.getElementById("studentActiveIdleChart").getContext("2d");
+            studentActiveIdleChart = new Chart(barCtx, {
+                type: "bar",
+                data: {
+                    labels,
+                    datasets: [
+                        { label: "Active (sec)", data: activeData, backgroundColor: "rgba(37,99,235,0.8)" },
+                        { label: "Idle (sec)", data: idleData, backgroundColor: "rgba(156,163,175,0.8)" }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            stacked: true
+                        },
+                        y: {
+                            stacked: true,
+                            beginAtZero: true,
+                            ticks: {
+                                callback: (v) => `${(v/60).toFixed(1)}m`
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => {
+                                    const sec = ctx.raw;
+                                    return `${ctx.dataset.label.replace(" (sec)","")}: ${(sec/60).toFixed(1)} min`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Render raw logs (table)
+        function renderRawLogs(normalizedLogs) {
+            if (!normalizedLogs || normalizedLogs.length === 0) {
+                studentLogs.innerHTML = "<p class='text-gray-500'>No logs available</p>";
+                return;
+            }
+
+            // ensure chronological order
+            const logs = [...normalizedLogs].sort((a, b) => a.timestamp - b.timestamp);
+
+            const rows = logs.map(l => `
+<tr>
+<td class="px-4 py-2 text-sm">${l.timestampRaw ?? ""}</td>
+<td class="px-4 py-2 text-sm">${l.title ?? ""}</td>
+<td class="px-4 py-2 text-sm">${l.idle}</td>
+<td class="px-4 py-2 text-sm">${l.status ?? ""}</td>
+<td class="px-4 py-2 text-sm">${l.app}</td>
+</tr>
+`).join("");
+
+            studentLogs.innerHTML = `
+<div class="overflow-x-auto">
+    <table class="min-w-full border-collapse">
+        <thead class="bg-gray-100">
+            <tr>
+                <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Timestamp</th>
+                <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Title</th>
+                <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Idle Time</th>
+                <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Status</th>
+                <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Application</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+            ${rows}
+        </tbody>
+    </table>
+</div>
+`;
+        }
+
+        // Show details for a clicked student
+        function showStudentDetails(username) {
+            const studentSessions = allSessions.filter(s => s.username === username);
+            if (!studentSessions.length) return;
+            studentDetails.classList.remove("hidden");
+            studentSummary.innerHTML = "";
+
+            // session-level summaries
+            const avgFocus = (studentSessions.reduce((a, b) => a + b.focusScore, 0) / studentSessions.length).toFixed(1);
+            const totalStudy = (studentSessions.reduce((a, b) => a + b.totalTime, 0) / 60).toFixed(1);
+            const avgIdle = (studentSessions.reduce((a, b) => a + b.idlePercent, 0) / studentSessions.length).toFixed(1);
+
+            studentSummary.innerHTML = `
+<div class="bg-white p-6 rounded-xl shadow flex flex-col items-center">
+    <div class="text-2xl font-bold text-blue-600">${avgFocus}</div>
+    <div class="text-gray-600">Avg Focus Score</div>
+</div>
+<div class="bg-white p-6 rounded-xl shadow flex flex-col items-center">
+    <div class="text-2xl font-bold text-blue-600">${totalStudy}</div>
+    <div class="text-gray-600">Total Study Time (min)</div>
+</div>
+<div class="bg-white p-6 rounded-xl shadow flex flex-col items-center">
+    <div class="text-2xl font-bold text-blue-600">${avgIdle}%</div>
+    <div class="text-gray-600">Avg Idle %</div>
+</div>
+`;
+
+            // Build normalized logs across ALL sessions for this student
+            const rawLogs = studentSessions.flatMap(s => s.log_json || []);
+            const normalizedLogs = rawLogs.map(normalizeLog);
+
+            // Compute app usage using time-gap + idle-delta logic
+            const appUsage = computeAppUsageFromLogs(normalizedLogs);
+
+            // Render app usage table and charts
+            renderAppUsage(appUsage);
+
+            // Build focus trend across sessions (by session date)
+            const labels = studentSessions.map(s => s.date ?? s.started_at ?? s.id ?? "");
+            const activeArr = studentSessions.map(s => (s.active_sec || 0) / 60);
+            const idleArr = studentSessions.map(s => (s.idle_sec || 0) / 60);
+            const focusTrend = studentSessions.map(s => s.focusScore);
+
+            // destroy previous focus chart if exists
+            if (studentFocusTrendChart) { studentFocusTrendChart.destroy(); studentFocusTrendChart = null; }
+
+            studentFocusTrendChart = new Chart(document.getElementById("studentFocusTrendChart"), {
+                type: "line",
+                data: {
+                    labels,
+                    datasets: [
+                        { label: "Focus Score", data: focusTrend, borderColor: "rgba(16,185,129,1)", fill: false, tension: 0.2 }
+                    ]
+                },
+                options: {
+                    scales: {
+                        y: { beginAtZero: true, max: 100 }
+                    }
+                }
+            });
+
+            // Render raw logs table
+            renderRawLogs(normalizedLogs);
+        }
+
+        // Make showStudentDetails accessible from HTML onclicks
+        window.showStudentDetails = showStudentDetails;
+
+        // Fetch data when button clicked
+        fetchBtn.addEventListener("click", async () => {
+            const code = codeInput.value.trim();
+            if (!code) { alert("Please enter a code!"); return; }
+            sessionTable.innerHTML = "<p class='text-gray-500'>Loading...</p>";
+            summary.innerHTML = "";
+            studentDetails.classList.add("hidden");
+            studentAppSummary.innerHTML = "";
+            studentLogs.innerHTML = "";
+
+            try {
+                // Your existing API endpoint (keeps previous behavior)
+                const res = await fetch(`https://zev-focus-api.vercel.app/api/session?code=${encodeURIComponent(code)}`);
+                if (!res.ok) throw new Error("API error: " + res.status);
+                const raw = await res.json();
+
+                // compute metrics and store globally
+                allSessions = computeMetrics(raw || []);
+
+                // render views
+                renderClassSummary(allSessions);
+                renderTable(allSessions);
+            } catch (err) {
+                sessionTable.innerHTML = `<p class="text-red-500">Error: ${err.message}</p>`;
+                console.error(err);
+            }
+        });
+        </script>
+    </body>
 </html>
 
