@@ -63,6 +63,9 @@
                 <!-- Application Usage Summary (table) -->
                 <div id="studentAppSummary"></div>
 
+                <!-- Title Usage Summary (table + charts will be injected) -->
+                <div id="studentTitleSummary"></div>
+
                 <!-- Raw Logs -->
                 <div class="bg-white p-6 rounded-xl shadow">
                     <h3 class="font-semibold mb-4">Raw Logs</h3>
@@ -82,11 +85,14 @@
         const studentSummary = document.getElementById("studentSummary");
         const studentLogs = document.getElementById("studentLogs");
         const studentAppSummary = document.getElementById("studentAppSummary");
+        const studentTitleSummary = document.getElementById("studentTitleSummary");
 
         // Chart instances (so we can destroy when re-rendering)
         let studentAppChart = null;
         let studentActiveIdleChart = null;
         let studentFocusTrendChart = null;
+        let studentTitlePieChart = null;
+        let studentTitleBarChart = null;
 
         // All sessions loaded from API
         let allSessions = [];
@@ -144,12 +150,7 @@
                 { label: "Top Performer", value: topPerformer }
             ];
 
-            summary.innerHTML = cards.map(c => `
-<div class="bg-white p-6 rounded-xl shadow flex flex-col items-center">
-<div class="text-2xl font-bold text-blue-600">${c.value}</div>
-<div class="text-gray-600">${c.label}</div>
-</div>
-`).join("");
+            summary.innerHTML = cards.map(c => ` <div class="bg-white p-6 rounded-xl shadow flex flex-col items-center"> <div class="text-2xl font-bold text-blue-600">${c.value}</div> <div class="text-gray-600">${c.label}</div> </div> `).join("");
         }
 
         function renderTable(sessions) {
@@ -157,30 +158,7 @@
                 sessionTable.innerHTML = "<p class='text-gray-500'>No data</p>";
                 return;
             }
-            const table = `
-<table class="min-w-full border-collapse">
-<thead class="bg-gray-100">
-<tr>
-${["Username","Task","Date","Study Time (min)","Idle %","Focus Score","Valid"].map(h =>
-`<th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">${h}</th>`
-).join("")}
-</tr>
-</thead>
-<tbody class="divide-y divide-gray-200">
-${sessions.map((s, i) => `
-<tr class="cursor-pointer hover:bg-gray-50" onclick="showStudentDetails('${(s.username||"").replace(/'/g,"\\'")}')">
-<td class="px-4 py-2 text-sm">${s.username}</td>
-<td class="px-4 py-2 text-sm">${s.task ?? s.taskname ?? ""}</td>
-<td class="px-4 py-2 text-sm">${s.date ?? s.started_at ?? ""}</td>
-<td class="px-4 py-2 text-sm">${(s.totalTime/60).toFixed(1)}</td>
-<td class="px-4 py-2 text-sm">${s.idlePercent.toFixed(1)}%</td>
-<td class="px-4 py-2 text-sm">${s.focusScore.toFixed(1)}</td>
-<td class="px-4 py-2 text-sm">${s.valid ? "✅" : "❌"}</td>
-</tr>
-`).join("")}
-</tbody>
-</table>
-`;
+            const table = ` <table class="min-w-full border-collapse"> <thead class="bg-gray-100"> <tr> ${["Username","Task","Date","Study Time (min)","Idle %","Focus Score","Valid"].map(h => `<th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">${h}</th>` ).join("")} </tr> </thead> <tbody class="divide-y divide-gray-200"> ${sessions.map((s, i) => ` <tr class="cursor-pointer hover:bg-gray-50" onclick="showStudentDetails('${(s.username||"").replace(/'/g,"\\'")}')"> <td class="px-4 py-2 text-sm">${s.username}</td> <td class="px-4 py-2 text-sm">${s.task ?? s.taskname ?? ""}</td> <td class="px-4 py-2 text-sm">${s.date ?? s.started_at ?? ""}</td> <td class="px-4 py-2 text-sm">${(s.totalTime/60).toFixed(1)}</td> <td class="px-4 py-2 text-sm">${s.idlePercent.toFixed(1)}%</td> <td class="px-4 py-2 text-sm">${s.focusScore.toFixed(1)}</td> <td class="px-4 py-2 text-sm">${s.valid ? "✅" : "❌"}</td> </tr> `).join("")} </tbody> </table> `;
             sessionTable.innerHTML = table;
             sessionTableWrapper.scrollTop = 0;
         }
@@ -205,19 +183,16 @@ ${sessions.map((s, i) => `
             };
         }
 
-        // Build app usage summary from normalized logs
-        function computeAppUsageFromLogs(normalizedLogs) {
-            const appUsage = {}; // { appName: { active: seconds, idle: seconds } }
-
-            // filter out logs with no valid timestamp
+        // Generic usage calculator used by both app & title logic
+        function computeUsageByKey(normalizedLogs, keyFn) {
+            const usage = {};
             const logs = normalizedLogs.filter(l => l.timestamp).sort((a, b) => a.timestamp - b.timestamp);
-
-            if (logs.length < 2) return appUsage;
+            if (logs.length < 2) return usage;
 
             for (let i = 0; i < logs.length - 1; i++) {
                 const cur = logs[i];
                 const next = logs[i + 1];
-                const gap = (next.timestamp - cur.timestamp) / 1000; // in seconds
+                const gap = (next.timestamp - cur.timestamp) / 1000; // seconds
                 if (gap <= 0) continue;
 
                 const deltaIdle = Math.max(0, (next.idle || 0) - (cur.idle || 0)); // how much idle counter increased
@@ -239,22 +214,27 @@ ${sessions.map((s, i) => `
 
                 const activeAssigned = Math.max(0, gap - idleAssigned);
 
-                const appName = cur.app || "Unknown";
-                if (!appUsage[appName]) appUsage[appName] = { active: 0, idle: 0 };
+                const key = keyFn(cur);
+                if (!usage[key]) usage[key] = { active: 0, idle: 0 };
 
-                appUsage[appName].active += activeAssigned;
-                appUsage[appName].idle += idleAssigned;
+                usage[key].active += activeAssigned;
+                usage[key].idle += idleAssigned;
             }
 
-            return appUsage;
+            return usage;
         }
 
-        // Utility: format seconds to "x.x min"
-        function secondsToMinutesLabel(sec) {
-            return (sec / 60).toFixed(1) + " min";
+        // Build app usage summary (keeps existing behavior)
+        function computeAppUsageFromLogs(normalizedLogs) {
+            return computeUsageByKey(normalizedLogs, l => l.app || "Unknown");
         }
 
-        // Render application usage table and charts
+        // Build title usage summary (new)
+        function computeTitleUsageFromLogs(normalizedLogs) {
+            return computeUsageByKey(normalizedLogs, l => `${l.app || "Unknown"} — ${l.title || "(No Title)"}`);
+        }
+
+        // Render application usage table and charts (original style)
         function renderAppUsage(appUsage) {
             // clear previous charts if any
             if (studentAppChart) { studentAppChart.destroy(); studentAppChart = null; }
@@ -275,33 +255,9 @@ ${sessions.map((s, i) => `
             entries.sort((a, b) => (b[1].active + b[1].idle) - (a[1].active + a[1].idle));
 
             // build table rows
-            const appRows = entries.map(([app, data]) => `
-<tr>
-<td class="px-4 py-2 text-sm">${app}</td>
-<td class="px-4 py-2 text-sm">${secondsToMinutesLabel(data.active)}</td>
-<td class="px-4 py-2 text-sm">${secondsToMinutesLabel(data.idle)}</td>
-</tr>
-`).join("");
+            const appRows = entries.map(([app, data]) => ` <tr> <td class="px-4 py-2 text-sm">${app}</td> <td class="px-4 py-2 text-sm">${secondsToMinutesLabel(data.active)}</td> <td class="px-4 py-2 text-sm">${secondsToMinutesLabel(data.idle)}</td> </tr> `).join("");
 
-            studentAppSummary.innerHTML = `
-<div class="bg-white p-6 rounded-xl shadow">
-    <h3 class="font-semibold mb-4">Application Usage Summary</h3>
-    <div class="overflow-x-auto">
-        <table class="min-w-full border-collapse">
-            <thead class="bg-gray-100">
-                <tr>
-                    <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Application</th>
-                    <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Active Time</th>
-                    <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Idle Time</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-200">
-                ${appRows}
-            </tbody>
-        </table>
-    </div>
-</div>
-`;
+            studentAppSummary.innerHTML = ` <div class="bg-white p-6 rounded-xl shadow">     <h3 class="font-semibold mb-4">Application Usage Summary</h3>     <div class="overflow-x-auto">         <table class="min-w-full border-collapse">             <thead class="bg-gray-100">                 <tr>                     <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Application</th>                     <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Active Time</th>                     <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Idle Time</th>                 </tr>             </thead>             <tbody class="divide-y divide-gray-200">                 ${appRows}             </tbody>         </table>     </div> </div> `;
 
             // Charts data
             const labels = entries.map(e => e[0]);
@@ -310,10 +266,7 @@ ${sessions.map((s, i) => `
             const totalData = labels.map((_, i) => activeData[i] + idleData[i]);
 
             // Pie chart: total usage per app (seconds -> minutes shown in tooltip)
-            // Pie chart: total usage per app (seconds -> minutes shown in tooltip)
             const pieCtx = document.getElementById("studentAppChart").getContext("2d");
-
-            // ✅ Generate distinct colors (HSL rainbow)
             const colors = labels.map((_, i) => `hsl(${(i * 360 / labels.length)}, 70%, 50%)`);
 
             studentAppChart = new Chart(pieCtx, {
@@ -339,31 +292,6 @@ ${sessions.map((s, i) => `
                 }
             });
 
-            <!--const pieCtx = document.getElementById("studentAppChart").getContext("2d");-->
-            <!--studentAppChart = new Chart(pieCtx, {-->
-            <!--  type: "pie",-->
-            <!--  data: {-->
-            <!--    labels,-->
-            <!--    datasets: [{-->
-            <!--      data: totalData,-->
-            <!--      // Chart.js will pick colors automatically; small palette hints used-->
-            <!--      backgroundColor: labels.map((_, i) => undefined)-->
-            <!--    }]-->
-            <!--  },-->
-            <!--  options: {-->
-            <!--    plugins: {-->
-            <!--      tooltip: {-->
-            <!--        callbacks: {-->
-            <!--          label: (ctx) => {-->
-            <!--            const sec = ctx.raw;-->
-            <!--            return `${ctx.label}: ${(sec/60).toFixed(1)} min`;-->
-            <!--          }-->
-            <!--        }-->
-            <!--      }-->
-            <!--    }-->
-            <!--  }-->
-            <!--});-->
-
             // Stacked bar: active vs idle (per app)
             const barCtx = document.getElementById("studentActiveIdleChart").getContext("2d");
             studentActiveIdleChart = new Chart(barCtx, {
@@ -378,30 +306,65 @@ ${sessions.map((s, i) => `
                 options: {
                     responsive: true,
                     scales: {
-                        x: {
-                            stacked: true
-                        },
-                        y: {
-                            stacked: true,
-                            beginAtZero: true,
-                            ticks: {
-                                callback: (v) => `${(v/60).toFixed(1)}m`
-                            }
-                        }
+                        x: { stacked: true },
+                        y: { stacked: true, beginAtZero: true, ticks: { callback: (v) => `${(v/60).toFixed(1)}m` } }
                     },
                     plugins: {
-                        tooltip: {
-                            callbacks: {
-                                label: (ctx) => {
-                                    const sec = ctx.raw;
-                                    return `${ctx.dataset.label.replace(" (sec)","")}: ${(sec/60).toFixed(1)} min`;
-                                }
-                            }
-                        }
+                        tooltip: { callbacks: { label: (ctx) => { const sec = ctx.raw; return `${ctx.dataset.label.replace(" (sec)","")}: ${(sec/60).toFixed(1)} min`; } } }
                     }
                 }
             });
         }
+
+        // Render Title-wise usage (table + charts)
+        function renderTitleUsage(titleUsage) {
+            // destroy previous title charts if present
+            if (studentTitlePieChart) { studentTitlePieChart.destroy(); studentTitlePieChart = null; }
+            if (studentTitleBarChart) { studentTitleBarChart.destroy(); studentTitleBarChart = null; }
+
+            const entries = Object.entries(titleUsage);
+            if (entries.length === 0) {
+                studentTitleSummary.innerHTML = "<p class='text-gray-500'>No title usage data</p>";
+                return;
+            }
+
+            entries.sort((a,b)=>(b[1].active+b[1].idle)-(a[1].active+a[1].idle));
+            const rows = entries.map(([k,v])=>`<tr><td class="px-4 py-2 text-sm">${k}</td><td class="px-4 py-2 text-sm">${secondsToMinutesLabel(v.active)}</td><td class="px-4 py-2 text-sm">${secondsToMinutesLabel(v.idle)}</td></tr>`).join("");
+
+            // inject table + two canvases for title charts
+            studentTitleSummary.innerHTML = `
+<div class="bg-white p-6 rounded-xl shadow mb-4">
+    <h3 class="font-semibold mb-4">Title Usage Summary</h3>
+    <div class="overflow-x-auto">
+        <table class="min-w-full border-collapse">
+            <thead class="bg-gray-100"><tr><th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Title (App — Title)</th><th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Active Time</th><th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Idle Time</th></tr></thead>
+            <tbody class="divide-y divide-gray-200">${rows}</tbody>
+        </table>
+    </div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="bg-white p-6 rounded-xl shadow"><h3 class="font-semibold mb-2">Title-wise Usage (Pie)</h3><canvas id="studentTitlePieChart"></canvas></div>
+    <div class="bg-white p-6 rounded-xl shadow"><h3 class="font-semibold mb-2">Title-wise Usage (Bar)</h3><canvas id="studentTitleBarChart"></canvas></div>
+</div>
+`;
+
+            const labels = entries.map(e=>e[0]);
+            const activeData = entries.map(e=>e[1].active);
+            const idleData = entries.map(e=>e[1].idle);
+            const totalData = labels.map((_,i)=>activeData[i]+idleData[i]);
+            const colors = labels.map((_,i)=>`hsl(${i*360/labels.length},70%,50%)`);
+
+            // pie
+            const pieCtx = document.getElementById('studentTitlePieChart').getContext('2d');
+            studentTitlePieChart = new Chart(pieCtx, { type: 'pie', data: { labels, datasets: [{ data: totalData, backgroundColor: colors }] }, options: { plugins: { tooltip: { callbacks: { label: (ctx)=> `${ctx.label}: ${(ctx.raw/60).toFixed(1)} min` } } } } });
+
+            // bar
+            const barCtx = document.getElementById('studentTitleBarChart').getContext('2d');
+            studentTitleBarChart = new Chart(barCtx, { type: 'bar', data: { labels, datasets: [{ label: 'Active (sec)', data: activeData, backgroundColor: 'rgba(37,99,235,0.8)' }, { label: 'Idle (sec)', data: idleData, backgroundColor: 'rgba(156,163,175,0.8)' }] }, options: { responsive: true, scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true, ticks: { callback: v=>`${(v/60).toFixed(1)}m` } } } } });
+        }
+
+        // Utility: format seconds to "x.x min"
+        function secondsToMinutesLabel(sec) { return (sec/60).toFixed(1) + " min"; }
 
         // Render raw logs (table)
         function renderRawLogs(normalizedLogs) {
@@ -413,34 +376,9 @@ ${sessions.map((s, i) => `
             // ensure chronological order
             const logs = [...normalizedLogs].sort((a, b) => a.timestamp - b.timestamp);
 
-            const rows = logs.map(l => `
-<tr>
-<td class="px-4 py-2 text-sm">${l.timestampRaw ?? ""}</td>
-<td class="px-4 py-2 text-sm">${l.title ?? ""}</td>
-<td class="px-4 py-2 text-sm">${l.idle}</td>
-<td class="px-4 py-2 text-sm">${l.status ?? ""}</td>
-<td class="px-4 py-2 text-sm">${l.app}</td>
-</tr>
-`).join("");
+            const rows = logs.map(l => ` <tr> <td class="px-4 py-2 text-sm">${l.timestampRaw ?? ""}</td> <td class="px-4 py-2 text-sm">${l.title ?? ""}</td> <td class="px-4 py-2 text-sm">${l.idle}</td> <td class="px-4 py-2 text-sm">${l.status ?? ""}</td> <td class="px-4 py-2 text-sm">${l.app}</td> </tr> `).join("");
 
-            studentLogs.innerHTML = `
-<div class="overflow-x-auto">
-    <table class="min-w-full border-collapse">
-        <thead class="bg-gray-100">
-            <tr>
-                <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Timestamp</th>
-                <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Title</th>
-                <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Idle Time</th>
-                <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Status</th>
-                <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Application</th>
-            </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-200">
-            ${rows}
-        </tbody>
-    </table>
-</div>
-`;
+            studentLogs.innerHTML = ` <div class="overflow-x-auto">     <table class="min-w-full border-collapse">         <thead class="bg-gray-100">             <tr>                 <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Timestamp</th>                 <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Title</th>                 <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Idle Time</th>                 <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Status</th>                 <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Application</th>             </tr>         </thead>         <tbody class="divide-y divide-gray-200">             ${rows}         </tbody     </table> </div> `;
         }
 
         // Show details for a clicked student
@@ -455,20 +393,7 @@ ${sessions.map((s, i) => `
             const totalStudy = (studentSessions.reduce((a, b) => a + b.totalTime, 0) / 60).toFixed(1);
             const avgIdle = (studentSessions.reduce((a, b) => a + b.idlePercent, 0) / studentSessions.length).toFixed(1);
 
-            studentSummary.innerHTML = `
-<div class="bg-white p-6 rounded-xl shadow flex flex-col items-center">
-    <div class="text-2xl font-bold text-blue-600">${avgFocus}</div>
-    <div class="text-gray-600">Avg Focus Score</div>
-</div>
-<div class="bg-white p-6 rounded-xl shadow flex flex-col items-center">
-    <div class="text-2xl font-bold text-blue-600">${totalStudy}</div>
-    <div class="text-gray-600">Total Study Time (min)</div>
-</div>
-<div class="bg-white p-6 rounded-xl shadow flex flex-col items-center">
-    <div class="text-2xl font-bold text-blue-600">${avgIdle}%</div>
-    <div class="text-gray-600">Avg Idle %</div>
-</div>
-`;
+            studentSummary.innerHTML = ` <div class="bg-white p-6 rounded-xl shadow flex flex-col items-center">     <div class="text-2xl font-bold text-blue-600">${avgFocus}</div>     <div class="text-gray-600">Avg Focus Score</div> </div> <div class="bg-white p-6 rounded-xl shadow flex flex-col items-center">     <div class="text-2xl font-bold text-blue-600">${totalStudy}</div>     <div class="text-gray-600">Total Study Time (min)</div> </div> <div class="bg-white p-6 rounded-xl shadow flex flex-col items-center">     <div class="text-2xl font-bold text-blue-600">${avgIdle}%</div>     <div class="text-gray-600">Avg Idle %</div> </div> `;
 
             // Build normalized logs across ALL sessions for this student
             const rawLogs = studentSessions.flatMap(s => s.log_json || []);
@@ -476,14 +401,17 @@ ${sessions.map((s, i) => `
 
             // Compute app usage using time-gap + idle-delta logic
             const appUsage = computeAppUsageFromLogs(normalizedLogs);
+            // Compute title usage
+            const titleUsage = computeTitleUsageFromLogs(normalizedLogs);
 
             // Render app usage table and charts
             renderAppUsage(appUsage);
 
+            // Render title usage table and charts
+            renderTitleUsage(titleUsage);
+
             // Build focus trend across sessions (by session date)
             const labels = studentSessions.map(s => s.date ?? s.started_at ?? s.id ?? "");
-            const activeArr = studentSessions.map(s => (s.active_sec || 0) / 60);
-            const idleArr = studentSessions.map(s => (s.idle_sec || 0) / 60);
             const focusTrend = studentSessions.map(s => s.focusScore);
 
             // destroy previous focus chart if exists
@@ -519,6 +447,7 @@ ${sessions.map((s, i) => `
             summary.innerHTML = "";
             studentDetails.classList.add("hidden");
             studentAppSummary.innerHTML = "";
+            studentTitleSummary.innerHTML = "";
             studentLogs.innerHTML = "";
 
             try {
