@@ -23,6 +23,8 @@
             <div class="flex gap-3">
                 <input id="codeInput" type="text" placeholder="Enter teacher code..."
                     class="px-4 py-2 border rounded-lg border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 flex-1"/>
+                <input id="teacherKeyInput" type="text" placeholder="Enter teacher key..."
+                    class="px-4 py-2 border rounded-lg border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 flex-1"/>
                 <button id="fetchBtn"
                     class="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg shadow hover:bg-blue-700 transition">
                     Fetch Sessions
@@ -78,6 +80,7 @@
         // DOM references
         const fetchBtn = document.getElementById("fetchBtn");
         const codeInput = document.getElementById("codeInput");
+        const teacherKeyInput = document.getElementById("teacherKeyInput");
         const summary = document.getElementById("summary");
         const sessionTable = document.getElementById("sessionTable");
         const sessionTableWrapper = document.getElementById("sessionTableWrapper");
@@ -442,7 +445,9 @@
         // Fetch data when button clicked
         fetchBtn.addEventListener("click", async () => {
             const code = codeInput.value.trim();
+            const teacherKey = teacherKeyInput.value.trim();
             if (!code) { alert("Please enter a code!"); return; }
+            if (!teacherKey) { alert("Please enter the teacher key!"); return; }
             sessionTable.innerHTML = "<p class='text-gray-500'>Loading...</p>";
             summary.innerHTML = "";
             studentDetails.classList.add("hidden");
@@ -452,7 +457,11 @@
 
             try {
                 // Your existing API endpoint (keeps previous behavior)
-                const res = await fetch(`https://zev-focus-api.vercel.app/api/session?code=${encodeURIComponent(code)}`);
+                //const res = await fetch(`https://zev-focus-api.vercel.app/api/session?code=${encodeURIComponent(code)}`);
+                const res = await fetch(`https://zev-focus-api.vercel.app/api/session?code=${encodeURIComponent(code)}`, {
+                    headers: { "X-Teacher-Key": teacherKey }
+                });
+
                 if (!res.ok) throw new Error("API error: " + res.status);
                 const raw = await res.json();
 
